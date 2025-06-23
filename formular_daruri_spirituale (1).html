@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Chestionar Daruri Spiritual</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 p-4">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-xl">
+    <h1 class="text-2xl font-bold mb-4">Chestionar pentru Descoperirea Darurilor Spirituale</h1>
+
+    <!-- Info utilizator -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium">Numele complet:</label>
+      <input id="nume" type="text" class="mt-1 p-2 border w-full rounded" placeholder="Ex: Ion Popescu">
+
+      <label class="block text-sm font-medium mt-4">Data completării:</label>
+      <input id="data" type="date" class="mt-1 p-2 border w-full rounded">
+    </div>
+
+    <!-- Întrebări -->
+    <form id="chestionar" class="space-y-6 max-h-[60vh] overflow-y-auto border p-4 rounded">
+      <!-- Întrebările vor fi generate dinamic -->
+    </form>
+
+    <!-- Submit -->
+    <div class="mt-6 text-right">
+      <button onclick="calculeazaRezultate()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Calculează</button>
+    </div>
+
+    <!-- Rezultate -->
+    <div id="rezultate" class="mt-8 hidden">
+      <h2 class="text-xl font-semibold mb-2">Rezultate</h2>
+      <div id="topRezultate" class="mb-4 text-gray-800"></div>
+      <button onclick="descarcaPDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Descarcă PDF</button>
+    </div>
+  </div>
+
+  <script>
+    // Întrebări extrase (exemplu 5 pentru test)
+    const intrebari = [
+      "Îmi place să-i organizezi pe oameni, sarcini şi evenimente.",
+      "Îmi place să lucrez în mod creativ cu lemn, textile, metal, sticlă.",
+      "Adesea aud oameni spunându-mi \"Niciodată nu m-am gândit la asta aşa\".",
+      "Pot face rapid distincţie între adevăruri spirituale şi erori.",
+      "Am tendinţa de a vedea potenţialul din oameni."
+      // + restul până la 133 (se adaugă după testare)
+    ];
+
+    const categorii = {
+      A: [], B: [], C: [], D: [], E: [], F: [], G: [], H: [], I: [],
+      J: [], K: [], L: [], M: [], N: [], O: [], P: [], Q: [], R: [], S: []
+    };
+
+    // Test: atribuim 5 întrebări fictiv la categorii (exemplu demo)
+    categorii.A = [1];
+    categorii.B = [2];
+    categorii.C = [3];
+    categorii.D = [4];
+    categorii.E = [5];
+
+    // Generare întrebări
+    const container = document.getElementById('chestionar');
+    intrebari.forEach((text, idx) => {
+      const nr = idx + 1;
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <label class="block mb-2 font-medium">${nr}. ${text}</label>
+        <select name="q${nr}" class="w-full p-2 border rounded">
+          <option value="">Selectează un răspuns</option>
+          <option value="3">3 = Întotdeauna</option>
+          <option value="2">2 = De obicei</option>
+          <option value="1">1 = Uneori</option>
+          <option value="0">0 = Niciodată</option>
+        </select>
+      `;
+      container.appendChild(div);
+    });
+
+    function calculeazaRezultate() {
+      const scoruri = {};
+      for (let lit in categorii) scoruri[lit] = 0;
+
+      const form = document.getElementById('chestionar');
+      const inputs = form.querySelectorAll('select');
+      inputs.forEach((select, idx) => {
+        const nr = idx + 1;
+        const val = parseInt(select.value);
+        if (!isNaN(val)) {
+          for (let lit in categorii) {
+            if (categorii[lit].includes(nr)) scoruri[lit] += val;
+          }
+        }
+      });
+
+      const rezultateSortate = Object.entries(scoruri).sort((a,b)=>b[1]-a[1]).slice(0,4);
+
+      const divRez = document.getElementById('topRezultate');
+      divRez.innerHTML = rezultateSortate.map(([lit, scor]) => `🟢 <b>${lit}</b>: ${scor} puncte`).join('<br>');
+      document.getElementById('rezultate').classList.remove('hidden');
+    }
+
+    function descarcaPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const nume = document.getElementById('nume').value;
+      const data = document.getElementById('data').value;
+      const text = document.getElementById('topRezultate').innerText;
+      doc.text(`Chestionar Daruri Spirituale\n\nNume: ${nume}\nData: ${data}\n\nRezultate:\n${text}`, 10, 10);
+      doc.save(`daruri_spirituale_${nume || 'fara_nume'}.pdf`);
+    }
+  </script>
+</body>
+</html>
