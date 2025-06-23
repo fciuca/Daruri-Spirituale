@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Chestionar Daruri Spirituale</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 p-4">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-xl">
+    <h1 class="text-2xl font-bold mb-4">Chestionar pentru Descoperirea Darurilor Spirituale</h1>
+
+    <!-- Info utilizator -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium">Numele complet:</label>
+      <input id="nume" type="text" class="mt-1 p-2 border w-full rounded" placeholder="Ex: Ion Popescu">
+
+      <label class="block text-sm font-medium mt-4">Data completării:</label>
+      <input id="data" type="date" class="mt-1 p-2 border w-full rounded">
+    </div>
+
+    <!-- Întrebări -->
+    <form id="chestionar" class="space-y-6 max-h-[60vh] overflow-y-auto border p-4 rounded">
+      <!-- Întrebările vor fi generate dinamic -->
+    </form>
+
+    <!-- Submit -->
+    <div class="mt-6 text-right">
+      <button onclick="calculeazaRezultate()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Calculează</button>
+    </div>
+
+    <!-- Rezultate -->
+    <div id="rezultate" class="mt-8 hidden">
+      <h2 class="text-xl font-semibold mb-2">Rezultate</h2>
+      <div id="topRezultate" class="mb-4 text-gray-800"></div>
+      <button onclick="descarcaPDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Descarcă PDF</button>
+    </div>
+  </div>
+
+  <script>
+    const intrebari = [
+      "Îmi place să-i organizezi pe oameni, sarcini şi evenimente.",
+"Îmi place să lucrez în mod creativ cu lemn, materiale textile, metal, sticlă sau alte materiale.",
+"Adesea aud oameni spunându-mi „Niciodată nu m-am gândit la asta în felul acesta”.",
+"Pot face rapid distincţie între adevărurile spirituale şi erori (falsuri), între bine şi rău.",
+"Am tendinţa de a vedea potenţialul din oameni.",
+"Pot comunica Evanghelia cu claritate şi eficienţă.",
+"Găsesc ca fiind natural şi uşor să mă încred în Dumnezeu că va răspunde rugăciunilor mele.",
+"Mă dăruiesc cu toată libertatea şi bucuria celor din jur.",
+"Mă descopăr gata să mă rog pentru oameni când aflu că sunt bolnavi.",
+"Mă bucur să lucrez în spatele scenei pentru a susţine lucrarea altora.",
+"Văd căminul meu ca pe un loc în care să-i slujesc pe cei aflaţi în nevoie.",
+"Accept să mă rog pentru alţii şi o fac în mod consistent.",
+"Sunt abordat de oameni care vor să cunoască perspectiva mea asupra unui anumit pasaj sau adevăr biblic.",
+"Reuşesc să-i motivez pe alţii să împlinească un ţel.",
+"Simt împreună cu oamenii răniţi şi am dorinţa de ai ajuta în procesul de vindecare.",
+"Pot vorbi într-un mod convingător şi să aduc schimbare în viaţa altora.",
+"Mă bucur să petrec timp hrănind şi purtând de grijă pentru alţii.",
+"Sunt în stare să comunic Cuvântul lui Dumnezeu în mod eficient.",
+"Sunt adesea căutat de alţii pentru sfătuire în probleme spirituale şi personale.",
+"Sunt atent şi am abilitatea de a mânui detaliile.",
+"Am abilitatea de a lucra cu diferite unelte.",
+"Mă bucur să-mi dezvolt şi să folosesc abilităţile mele artistice (artă, teatru, muzică, foto, etc.).",
+"Sunt în stare în mod frecvent, să judec caracterul unei persoane bazându-mă pe prima impresie.",
+"Mă bucur să-i reasigur şi să-i întăresc pe cei ce sunt descurajaţi.",
+"Sunt preocupat mereu pentru găsirea de oportunităţi în construirea de relaţii cu necreştini.",
+"Am încredere în purtarea continuă de grijă şi ajutorul lui Dumnezeu chiar şi în perioadele dificile.",
+"Dăruiesc mai mult decât zeciuiala pentru ca lucrarea Împărăţiei să poată fi împlinită.",
+"Sunt conştient de faptul că Dumnezeu m-a folosit ca instrument pentru vindecare (în general).",
+"Cred că există o semnificaţie spirituală în împlinirea sarcinilor de rutină pentru susţinerea lucrării.",
+"Mă bucur să întâlnesc oameni noi şi să-i fac să se simtă bineveniţi.",
+"Îmi place să mă rog pentru perioade îndelungate de timp şi uneori pot „vedea” pentru ce ar dori Dumnezeu să mă rog.",
+"Citesc în mod constant pentru o mai bună înţelegere şi pentru a învăţa mai mult despre Biblie.",
+"Sunt capabil să-i influenţez pe alţii de a avea o viziune pentru că mai întâi le-am câştigat încrederea.",
+"Pot să-i susţin cu răbdare pe cei care trec prin experienţe dureroase, timp în care ei încearcă să-şi stabilizeze viaţa.",
+"Mă simt responsabil să-i confrunt pe alţii cu adevărul.",
+"Am compasiune pentru credincioşii „rătăcitori” şi vreau să-i protejez.",
+"Pot petrece timp pentru studiu ştiind că prezentarea adevărului va aduce o schimbare în vieţile oamenilor.",
+"Pot adesea găsi răspunsuri simple, practice în mijlocul conflictului sau confuziei.",
+"Pot clarifica ţeluri, strategii sau planuri pentru atingerea lor.",
+"Mă bucur să fac lucruri care să fie folosite în lucrare.",
+"Îi ajut pe oameni să se înţeleagă pe ei înşişi şi pe Dumnezeu mai bine, prin exprimare artistică.",
+"Pot vedea falsitatea şi înşelăciunea înainte de a fi evidentă altora.",
+"Aduc speranţă altora, conducându-i spre promisiunile lui Dumnezeu.",
+"Am tendinţa de a-i încuraja pe cei ce sunt căzuţi şi părăsiţi.",
+"Cred că Domnul mă va ajuta să împlinesc lucruri mari.",
+"Îmi chivernisesc bine banii în aşa fel încât să-mi rămână mai mult pentru a dărui.",
+"Când mă rog pentru vindecarea unei persoane, am adesea un sentiment de căldură sau o senzaţie de furnicătură în podul palmelor.",
+"Sunt gata să mă implic în mod voluntar într-o varietate de activităţi suplimentare pe lângă biserică, pentru a împlini nevoile altora.",
+"Cred cu adevărat că Domnul îi călăuzeşte la mine pe oamenii care au nevoie de ajutor pentru a avea sentimentul apartenenţei.",
+"Sunt conştient că slujesc altora în timp ce mă rog.",
+"Învăţ cu uşurinţă şi redau cu acurateţe detaliile biblice.",
+"Pot să-mi ajustez stilul de conducere pentru a-i ajuta pe ceilalţi să dea ce este mai bun în ei.",
+"Mă bucur să-i ajut pe oameni când lucrul acesta este văzut ca nemeritat sau dincolo de ajutor.",
+"Demasc cu tărie tendinţele culturale, învăţăturile sau evenimentele care contravin principiilor biblice.",
+"Îmi place să ofer călăuzire pentru (să ghidez) întreaga persoană – relaţional, emoţional, spiritual, etc.",
+"Am tendinţa să acord o atenţie deosebită cuvintelor, frazelor şi sensului, învăţăturii celor ce învaţă pe alţii.",
+"Pot cu uşurinţă să selectez cel mai eficient curs de acţiune din mai multe alternative.",
+"Pot identifica şi folosi cu eficienţă resursele necesare pentru împlinirea sarcinilor.",
+"Pot vizualiza cum ar trebui să se construiască ceva anume înainte de a-l construi.",
+"Îmi place să găsesc căi noi şi proaspete de comunicare a adevărurilor lui Dumnezeu altora.",
+"Am tendinţa de a vedea corectitudinea sau incorectitudinea situaţiilor.",
+"Reasigur (întăresc) pe cei care trebuie să acţioneze cu curaj în credinţă, familie sau viaţă.",
+"Îi chem pe necredincioşi să-L accepte pe Hristos ca Mântuitor al lor.",
+"Mă încred în Dumnezeu în împrejurările când succesul nu poate fi garantat numai de eforturile umane.",
+"Mă simt provocat să-mi limitez stilul de viaţă pentru a putea dărui un procentaj mai mare din câştigurile mele.",
+"Am credinţă că Dumnezeu vindecă oamenii atunci când mă rog pentru ei.",
+"Îmi face plăcere să-i slujesc pe alţii astfel încât ei să-şi poată folosi darurile spirituale mai eficient.",
+"Îmi place să creez un loc unde oamenii să nu se simtă singuri.",
+"Mă rog cu încredere pentru că ştiu că Dumnezeu va lucra ca răspuns la rugăciune.",
+"Uneori am discernământul, sau pur şi simplu ştiu că un lucru este adevărat.",
+"Fixez ţelurile şi organizez oamenii şi resursele efectiv, pentru a le atinge.",
+"Simt o adâncă compasiune pentru persoanele care sunt în suferinţă fizică sau emoţională.",
+"Văd cele mai multe acţiuni ca fiind bune sau rele şi simt nevoia de a le corecta pe cele rele.",
+"Pot oferi cu credincioşie un suport de durată şi îngrijire pentru alţii.",
+"Îmi place să am o abordare sistematică a studierii Bibliei.",
+"Pot anticipa consecinţele probabile ale acţiunii unui individ sau grup.",
+"Îmi place să ajut organizaţiile sau grupurile pentru a le face mai eficiente.",
+"Îl onorez pe Dumnezeu cu daruri lucrate manual (lucruri ce ţin de îndemânarea mea).",
+"Înţeleg şi apreciez diferite forme de artă.",
+"Am primit confirmarea, de la alţii, cu privire la autenticitatea discernământului meu.",
+"Îi întăresc pe cei care se clatină în credinţa lor.",
+"Îmi face plăcere să ştiu că oamenii cunosc că sunt creştin şi aş vrea să fiu întrebat despre credinţa mea.",
+"Sunt convins de prezenţa şi lucrarea zilnică a Domnului în viaţa mea.",
+"Mă bucur să ştiu că susţinerea mea financiară aduce o schimbare reală în vieţile şi slujirea copiilor lui Dumnezeu.",
+"Când mă rog pentru vindecarea altora sunt conştient cu privire la Duhul Sfânt. E ceva care se întâmplă şi lucrează dincolo de fiinţa mea, şi eu doar sunt martor (privesc) la ceea ce se întâmplă.",
+"Îmi place să găsesc lucruri mici ce trebuie făcute şi îmi place să le fac fără a fi rugat.",
+"Îmi place să conversez cu oamenii şi să-mi deschid casa pentru alţii.",
+"Când aud despre o situaţie dificilă simt imediat povara rugăciunii.",
+"Sunt capabil să asimilez şi să sortez fără greutate o cantitate mare de studii sau informaţii.",
+"Îi influenţez pe alţii pentru a-i face să acţioneze la performanţele lor cele mai bune.",
+"Pot privi dincolo de handicapurile şi problemele unei persoane şi vedea o viaţă care este importantă pentru Domnul.",
+"Îmi plac oamenii oneşti şi care spun adevărul.",
+"Îmi place să ofer călăuzire (ghidare) şi suport practic pentru un grup mic de oameni.",
+"Pot propovădui Scriptura în aşa fel încât să-i motivez pe alţii pentru a studia şi învăţa mai mult.",
+"Ofer recomandări (sfaturi) practice pentru a ajuta pe alţii să depăşească situaţiile dificile.",
+"Îmi place să învăţ despre cum funcţionează organizaţiile.",
+"Sunt bun şi îmi face plăcere să lucrez cu mâinile mele.",
+"Sunt creativ şi am imaginaţie.",
+"Pot identifica predicarea, învăţătura sau comunicarea care nu este conform adevărului Biblic.",
+"Îmi place să-i motivez pe alţii pentru a face paşi concreţi în creşterea lor spirituală.",
+"Spun altora, deschis şi cu îndrăzneală, ce a făcut Hristos pentru mine.",
+"Îi provoc pe alţii în mod regulat să se încreadă în Domnul.",
+"Dăruiesc cu generozitate în acord cu angajamentul meu de a fi un administrator credincios a tot ceea ce mi-a încredinţat Domnul.",
+"Oamenii întotdeauna văd rezultatele rugăciunilor mele pentru vindecarea lor chiar dacă ele nu sunt imediate sau complete.",
+"Mă simt bine în postura de ajutor, asistând pe alţii ca să-şi facă lucrarea mai eficient.",
+"Fac tot ce pot pentru ca oamenii să aibă un sentiment al apartenenţei.",
+"Sunt onorat când cineva îmi cere să mă rog pentru el.",
+"Sunt dedicat să înţeleg adevărul în întregime şi cu toată acurateţea.",
+"Sunt capabil să împărtăşesc o viziune în care alţii vor să se implice.",
+"Îmi place să aduc nădejde şi bucurie oamenilor care trăiesc în circumstanţe dificile.",
+"Vorbesc adevărul lui Dumnezeu chiar şi în locurile în care acesta nu are popularitate sau este acceptat cu greu de ascultători.",
+"Pot restabili delicat credincioşii „rătăcitori” la credinţă şi părtăşie.",
+"Pot prezenta informaţiile şi funcţiile altora, în aşa fel încât să fie uşor de înţeles şi aplicat în vieţile lor.",
+"Pot aplica adevărurile biblice pe care alţii le consideră practice şi de ajutor.",
+"Pot vizualiza evenimentul ce va urma, anticipa potenţialele probleme, şi dezvolta un plan de rezervă.",
+"Sunt capabil să proiectez şi să realizez lucruri care pot ajuta biserica.",
+"Simt regulat nevoia de a fi singur pentru a medita şi a-mi dezvolta imaginaţia.",
+"Pot sesiza când forţele demonice acţionează într-o persoană sau situaţie.",
+"Sunt capabil de a-i provoca sau mustra pe alţii în scopul unei creşteri spirituale rapide.",
+"Discut fără probleme lucrurile spirituale cu necredincioşii.",
+"Pot înainta în ciuda opoziţiei sau lipsei susţinerii când simt că binecuvântarea Domnului este într-o problemă.",
+"Cred că mi s-au dat resurse din abundenţă astfel încât să pot oferi mai mult pentru lucrarea Domnului.",
+"Când mă rog pentru vindecarea cuiva sunt conştient că mă rog cu autoritate.",
+"Îmi folosesc cu bucurie şi inimă largă abilităţile mele naturale sau învăţate pentru a ajuta când este nevoie.",
+"Pot face ca oamenii să se simtă confortabil chiar când sunt în împrejurimi nefamiliare.",
+"Văd adesea rezultate specifice (clare) ca rezultat direct la rugăciunile mele.",
+"Îmi împărtăşesc cu îndrăzneală discernământul şi părerile mele cu alţii.",
+"Sunt capabil să-i ajut pe alţii să-şi clarifice ţelurile, să identifice obstacolele şi să ia decizii care îi vor ajuta să-şi atingă ţelul.",
+"Îmi face plăcere să fac lucruri practice pentru alţii când sunt în nevoie.",
+"Sunt silit să descopăr păcatul oriunde îl văd şi să provoc oamenii să-l mărturisească.",
+"Îmi face plăcere ca în mod răbdător să cresc oamenii dar ferm, în dezvoltarea lor ca şi credincioşi.",
+"Îmi face plăcere să expun, explic oamenilor lucrurile în aşa fel încât să-i fac să înţeleagă şi să acţioneze corespunzător.",
+"Am adesea discernământ în problemele pe care alţii nu le văd.",
+      // ... (continua cu restul celor 133 intrebari)
+    ];
+
+    const categorii = {
+      A: [], B: [], C: [], D: [], E: [], F: [], G: [], H: [], I: [],
+      J: [], K: [], L: [], M: [], N: [], O: [], P: [], Q: [], R: [], S: []
+    };
+
+    const container = document.getElementById('chestionar');
+    intrebari.forEach((text, idx) => {
+      const nr = idx + 1;
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <label class="block mb-2 font-medium">${nr}. ${text}</label>
+        <select name="q${nr}" class="w-full p-2 border rounded">
+          <option value="">Selectează un răspuns</option>
+          <option value="3">3 = Întotdeauna</option>
+          <option value="2">2 = De obicei</option>
+          <option value="1">1 = Uneori</option>
+          <option value="0">0 = Niciodată</option>
+        </select>
+      `;
+      container.appendChild(div);
+    });
+
+    function calculeazaRezultate() {
+      const scoruri = {};
+      for (let lit in categorii) scoruri[lit] = 0;
+
+      const form = document.getElementById('chestionar');
+      const inputs = form.querySelectorAll('select');
+      inputs.forEach((select, idx) => {
+        const nr = idx + 1;
+        const val = parseInt(select.value);
+        if (!isNaN(val)) {
+          for (let lit in categorii) {
+            if (categorii[lit].includes(nr)) scoruri[lit] += val;
+          }
+        }
+      });
+
+      const rezultateSortate = Object.entries(scoruri).sort((a,b)=>b[1]-a[1]).slice(0,4);
+
+      const divRez = document.getElementById('topRezultate');
+      divRez.innerHTML = rezultateSortate.map(([lit, scor]) => `🟢 <b>${lit}</b>: ${scor} puncte`).join('<br>');
+      document.getElementById('rezultate').classList.remove('hidden');
+    }
+
+    function descarcaPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const nume = document.getElementById('nume').value;
+      const data = document.getElementById('data').value;
+      const text = document.getElementById('topRezultate').innerText;
+      doc.text(`Chestionar Daruri Spirituale\n\nNume: ${nume}\nData: ${data}\n\nRezultate:\n${text}`, 10, 10);
+      doc.save(`daruri_spirituale_${nume || 'fara_nume'}.pdf`);
+    }
+  </script>
+</body>
+</html>
